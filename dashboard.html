@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - SMKN 1 Gedangan</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5e6ca 0%, #fdf0d8 100%);
+            min-height: 100vh;
+        }
+        .navbar {
+            background: linear-gradient(135deg, #ffd700, #daa520);
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .logo { font-size: 22px; font-weight: bold; color: #5c3d1a; }
+        .nav-links a {
+            color: #5c3d1a;
+            text-decoration: none;
+            padding: 8px 18px;
+            border-radius: 30px;
+            background: rgba(255,255,200,0.7);
+            margin: 0 5px;
+        }
+        .user-info {
+            background: #5c3d1a;
+            padding: 8px 20px;
+            border-radius: 30px;
+            color: #ffd700;
+        }
+        .container { max-width: 800px; margin: 0 auto; padding: 30px; }
+        .welcome {
+            background: white;
+            border-radius: 30px;
+            padding: 30px;
+            text-align: center;
+            margin-bottom: 30px;
+            border: 2px solid #ffd700;
+        }
+        .welcome h1 { color: #8B4513; font-size: 32px; }
+        .status-card {
+            background: white;
+            border-radius: 30px;
+            padding: 40px;
+            text-align: center;
+            border: 2px solid #ffd700;
+        }
+        .hadir { color: #2e7d32; font-size: 28px; font-weight: bold; }
+        .terlambat { color: #f57c00; font-size: 28px; font-weight: bold; }
+        .alpa { color: #c62828; font-size: 28px; font-weight: bold; }
+        .btn-absen {
+            background: linear-gradient(135deg, #ffd700, #daa520);
+            padding: 15px 40px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 18px;
+            color: #5c3d1a;
+            display: inline-block;
+            margin-top: 20px;
+        }
+        .admin-section {
+            background: #fff0d0;
+            border: 2px solid #ffd700;
+            border-radius: 20px;
+            padding: 20px;
+            margin-top: 30px;
+        }
+        .admin-buttons {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-top: 15px;
+        }
+        .admin-buttons a {
+            background: #8B4513;
+            color: #ffd700;
+            padding: 10px 20px;
+            border-radius: 30px;
+            text-decoration: none;
+        }
+        @media (max-width: 600px) {
+            .navbar { flex-direction: column; gap: 10px; }
+            .welcome h1 { font-size: 24px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <div class="logo">👑 KERAJAAN SMKN 1 GEDANGAN</div>
+        <div style="display: flex; align-items: center; gap: 15px; flex-wrap: wrap;">
+            <div class="nav-links">
+                {% if role != 'admin' %}
+                <a href="/absen">📜 ABSEN</a>
+                {% endif %}
+                <a href="/logout">🚪 KELUAR</a>
+            </div>
+            <div class="user-info">✨ {{ nama }} ✨ ({{ role }})</div>
+        </div>
+    </div>
+    
+    <div class="container">
+        <div class="welcome">
+            <h1>🏰 SELAMAT DATANG DI ISTANA 🏰</h1>
+            <p>SMKN 1 Gedangan Malang</p>
+            <p style="margin-top: 10px;">📅 {{ today }} | ⏰ {{ jam_sekarang }}</p>
+        </div>
+        
+        <div class="status-card">
+            {% if sudah_absen %}
+                {% if 'Hadir' in status_absen %}
+                    <div class="hadir">✅ TELAH HADIR DI ISTANA ✅</div>
+                {% elif 'Terlambat' in status_absen %}
+                    <div class="terlambat">⏰ TERLAMBAT — TETAP MASUK ⏰</div>
+                {% else %}
+                    <div class="alpa">❌ ALPA HARI INI ❌</div>
+                {% endif %}
+                <p style="margin-top: 15px;">Jam Absen: {{ jam_absen }}</p>
+            {% else %}
+                {% if boleh_absen %}
+                    <p style="font-size: 20px;">⚔️ BELUM ABSEN HARI INI ⚔️</p>
+                    <a href="/absen" class="btn-absen">📜 TEKAN UNTUK ABSEN</a>
+                {% else %}
+                    <div class="alpa">❌ PINTU ISTANA TERTUTUP ❌</div>
+                    <p style="margin-top: 15px;">Jam 10:00 telah lewat! Tidak bisa absen hari ini.</p>
+                {% endif %}
+            {% endif %}
+        </div>
+        
+        {% if role == 'admin' %}
+        <div class="admin-section">
+            <h3>⚜️ RUANG PENGUASA KERAJAAN ⚜️</h3>
+            <p>Hanya terlihat oleh Penguasa Kerajaan</p>
+            <div class="admin-buttons">
+                <a href="/penguasa/panel">👑 KELOLA PASUKAN</a>
+                <a href="/rekap">📊 REKAP KERAJAAN</a>
+                <a href="/riwayat">📜 RIWAYAT SEMUA</a>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</body>
+</html>

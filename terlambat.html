@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lewat Jam - SMKN 1 Gedangan</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5e6ca, #fdf0d8);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .card {
+            background: white;
+            border-radius: 30px;
+            padding: 40px;
+            text-align: center;
+            border: 3px solid #c62828;
+            max-width: 400px;
+        }
+        a {
+            display: inline-block;
+            background: #c62828;
+            color: white;
+            padding: 12px 30px;
+            border-radius: 30px;
+            text-decoration: none;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>❌ PINTU ISTANA TERTUTUP</h1>
+        <p style="font-size: 48px; margin: 20px;">⏰</p>
+        <p>Jam menunjukkan: <strong>{{ jam }}</strong></p>
+        <p style="margin-top: 15px; color: #c62828;">Jam 10:00 telah lewat!</p>
+        <p>Anda TIDAK BISA absen hari ini.</p>
+        <p>Status akan tercatat sebagai <strong>ALPA</strong>.</p>
+        <a href="/dashboard">🏰 KEMBALI KE ISTANA</a>
+    </div>
+</body>
+</html>

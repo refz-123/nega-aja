@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - SMKN 1 Gedangan</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #f5e6ca, #fdf0d8);
+            padding: 20px;
+        }
+        .navbar {
+            background: linear-gradient(135deg, #ffd700, #daa520);
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            border-radius: 15px;
+            margin-bottom: 20px;
+        }
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 25px;
+            border: 2px solid #ffd700;
+        }
+        h2 { color: #8B4513; margin-bottom: 20px; }
+        .form-2col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ffd700;
+            border-radius: 30px;
+        }
+        button {
+            background: linear-gradient(135deg, #ffd700, #daa520);
+            padding: 12px 25px;
+            border: none;
+            border-radius: 30px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 15px;
+        }
+        .btn-hapus {
+            background: #c62828;
+            color: white;
+            padding: 6px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #f0d8a8;
+        }
+        th { background: #ffd700; }
+        .warning { background: #ffebee; color: #c62828; padding: 5px 10px; border-radius: 10px; font-size: 11px; }
+        @media (max-width: 700px) {
+            .form-2col { grid-template-columns: 1fr; }
+            th, td { font-size: 12px; padding: 6px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <div class="logo">👑 RUANG PENGUASA</div>
+        <a href="/dashboard">🏰 KEMBALI</a>
+    </div>
+    
+    <!-- FORM TAMBAH USER (MURID/GURU) - TANPA NIS/NIP -->
+    <div class="card">
+        <h2>⚔️ TAMBAH PASUKAN BARU</h2>
+        <form method="POST">
+            <input type="hidden" name="action" value="create_user">
+            
+            <div class="form-2col">
+                <input type="text" name="username" placeholder="Username (contoh: reva_wahyuda)" required>
+                <input type="password" name="password" placeholder="Password" required>
+                <select name="role" id="roleSelect" required>
+                    <option value="murid">🎓 MURID</option>
+                    <option value="guru">📚 GURU</option>
+                </select>
+                <input type="text" name="nama_lengkap" placeholder="Nama Lengkap" required>
+            </div>
+            
+            <!-- FIELD KHUSUS MURID (hanya kelas, tanpa NIS) -->
+            <div id="muridFields">
+                <div class="form-2col">
+                    <select name="kelas_id">
+                        <option value="">📚 Pilih Kelas</option>
+                        {% for k in kelas_list %}
+                        <option value="{{ k.id }}">{{ k.nama }}</option>
+                        {% endfor %}
+                    </select>
+                    <input type="text" name="mapel" placeholder="Kosongkan untuk murid" style="opacity:0.5;">
+                </div>
+            </div>
+            
+            <!-- FIELD KHUSUS GURU (mapel) -->
+            <div id="guruFields" style="display:none;">
+                <div class="form-2col">
+                    <input type="text" name="mapel" placeholder="Mata Pelajaran" value="">
+                    <input type="text" name="kelas_id" placeholder="Kelas (kosongkan)" style="opacity:0.5;">
+                </div>
+            </div>
+            
+            <button type="submit">➕ TAMBAH PASUKAN</button>
+        </form>
+    </div>
+    
+    <!-- DAFTAR USER + TOMBOL HAPUS -->
+    <div class="card">
+        <h2>📋 DAFTAR SELURUH PASUKAN</h2>
+        <div style="overflow-x: auto;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Username</th>
+                        <th>Role</th>
+                        <th>Nama</th>
+                        <th>Detail</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for u in users %}
+                    <tr>
+                        <td>{{ u.id }}</td>
+                        <td>{{ u.username }}</td>
+                        <td>
+                            {% if u.role == 'admin' %}👑 {{ u.role }}
+                            {% elif u.role == 'guru' %}📚 {{ u.role }}
+                            {% else %}🎓 {{ u.role }}{% endif %}
+                        </td>
+                        <td>{{ u.nama }}</td>
+                        <td>
+                            {% if u.role == 'murid' %}
+                                {% for k in kelas_list %}{% if k.id == u.siswa_id %}Kelas: {{ k.nama }}{% endif %}{% endfor %}
+                            {% elif u.role == 'guru' %}
+                                Guru
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if u.role != 'admin' %}
+                            <form method="POST" onsubmit="return confirm('Yakin hapus {{ u.username }}?')">
+                                <input type="hidden" name="action" value="delete_user">
+                                <input type="hidden" name="user_id" value="{{ u.id }}">
+                                <input type="hidden" name="role_user" value="{{ u.role }}">
+                                <input type="hidden" name="siswa_id" value="{{ u.siswa_id }}">
+                                <input type="hidden" name="guru_id" value="{{ u.guru_id }}">
+                                <button type="submit" class="btn-hapus">🗑️ HAPUS</button>
+                            </form>
+                            {% else %}
+                            <span class="warning">⚜️ TIDAK BISA DIHAPUS</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <script>
+        function toggleFields() {
+            let role = document.getElementById('roleSelect').value;
+            document.getElementById('muridFields').style.display = role === 'murid' ? 'block' : 'none';
+            document.getElementById('guruFields').style.display = role === 'guru' ? 'block' : 'none';
+        }
+        document.getElementById('roleSelect').onchange = toggleFields;
+        toggleFields();
+    </script>
+</body>
+</html>

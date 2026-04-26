@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rekap - SMKN 1 Gedangan</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5e6ca, #fdf0d8);
+            padding: 20px;
+        }
+        .navbar {
+            background: linear-gradient(135deg, #ffd700, #daa520);
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            border-radius: 15px;
+            margin-bottom: 20px;
+        }
+        .filter-card {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 25px;
+            border: 2px solid #ffd700;
+        }
+        .filter-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 15px;
+            align-items: center;
+        }
+        .periode-btn {
+            background: #fff8e7;
+            border: 2px solid #ffd700;
+            padding: 8px 20px;
+            border-radius: 30px;
+            text-decoration: none;
+            color: #5c3d1a;
+        }
+        .periode-btn.active { background: #ffd700; }
+        .search-box {
+            display: flex;
+            gap: 10px;
+            margin-left: auto;
+            flex-wrap: wrap;
+        }
+        .search-box input, .search-box select {
+            padding: 8px 15px;
+            border: 2px solid #ffd700;
+            border-radius: 30px;
+        }
+        .search-box button {
+            background: #daa520;
+            padding: 8px 20px;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        table {
+            width: 100%;
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #f0d8a8;
+        }
+        th {
+            background: #ffd700;
+            color: #5c3d1a;
+        }
+        .text-hadir { color: #2e7d32; font-weight: bold; }
+        .text-terlambat { color: #f57c00; font-weight: bold; }
+        .text-alpa { color: #c62828; font-weight: bold; }
+        .print-btn {
+            background: #8B4513;
+            color: white;
+            padding: 8px 20px;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+        }
+        a { color: #5c3d1a; text-decoration: none; }
+        @media print {
+            .navbar, .filter-card { display: none; }
+        }
+        @media (max-width: 700px) {
+            th, td { font-size: 11px; padding: 6px; }
+            .filter-group { flex-direction: column; align-items: stretch; }
+            .search-box { margin-left: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <div class="logo">👑 REKAP KERAJAAN</div>
+        <a href="/dashboard">🏰 KEMBALI</a>
+    </div>
+    
+    <div class="filter-card">
+        <h2>📊 REKAP KEHADIRAN</h2>
+        <p>{{ label }}</p>
+        
+        <div class="filter-group">
+            <a href="/rekap?periode=minggu&search={{ search }}&filter_kelas={{ filter_kelas }}" class="periode-btn {% if periode == 'minggu' %}active{% endif %}">🗓️ MINGGU</a>
+            <a href="/rekap?periode=bulan&search={{ search }}&filter_kelas={{ filter_kelas }}" class="periode-btn {% if periode == 'bulan' %}active{% endif %}">📆 BULAN</a>
+            <a href="/rekap?periode=semester&search={{ search }}&filter_kelas={{ filter_kelas }}" class="periode-btn {% if periode == 'semester' %}active{% endif %}">🎓 SEMESTER</a>
+            
+            <form method="GET" action="/rekap" class="search-box">
+                <input type="hidden" name="periode" value="{{ periode }}">
+                <select name="filter_kelas">
+                    <option value="">📚 SEMUA KELAS</option>
+                    {% for k in kelas_list %}
+                    <option value="{{ k.id }}" {% if filter_kelas == k.id|string %}selected{% endif %}>{{ k.nama }}</option>
+                    {% endfor %}
+                </select>
+                <input type="text" name="search" placeholder="🔍 Cari Nama..." value="{{ search }}">
+                <button type="submit">🔍 CARI</button>
+            </form>
+            
+            <button onclick="window.print()" class="print-btn">🖨️ CETAK</button>
+        </div>
+    </div>
+    
+    <div style="overflow-x: auto;">
+        <table>
+            <thead>
+                <tr>
+                    <th>No</th>
+                    <th>Nama</th>
+                    <th>Role</th>
+                    <th>Kelas</th>
+                    <th>✅ Hadir</th>
+                    <th>⏰ Terlambat</th>
+                    <th>❌ Alpa</th>
+                    <th>📊 Total</th>
+                    <th>📈 % Hadir</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in data %}
+                <tr>
+                    <td>{{ loop.index }}</td>
+                    <td><strong>{{ row.nama }}</strong></td>
+                    <td>{{ row.role }}</td>
+                    <td>{{ row.kelas or '-' }}</td>
+                    <td class="text-hadir">{{ row.hadir or 0 }}</td>
+                    <td class="text-terlambat">{{ row.terlambat or 0 }}</td>
+                    <td class="text-alpa">{{ row.alpa or 0 }}</td>
+                    <td>{{ row.total_absen or 0 }}</td>
+                    <td>
+                        {% set total = (row.hadir or 0) + (row.terlambat or 0) %}
+                        {% if total > 0 %}
+                            {{ ((total / ((row.total_absen or 1)) * 100))|round(1) }}%
+                        {% else %}
+                            0%
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>

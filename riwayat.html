@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Riwayat - SMKN 1 Gedangan</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5e6ca, #fdf0d8);
+            padding: 20px;
+        }
+        .navbar {
+            background: linear-gradient(135deg, #ffd700, #daa520);
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            border-radius: 15px;
+            margin-bottom: 20px;
+        }
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            border: 2px solid #ffd700;
+        }
+        .search-section {
+            display: flex;
+            gap: 10px;
+            margin: 15px 0;
+        }
+        .search-section input {
+            flex: 1;
+            padding: 10px;
+            border: 2px solid #ffd700;
+            border-radius: 30px;
+        }
+        .search-section button {
+            background: #daa520;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            overflow-x: auto;
+            display: block;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #f0d8a8;
+        }
+        th {
+            background: #ffd700;
+            position: sticky;
+            top: 0;
+        }
+        .status-Hadir { color: #2e7d32; font-weight: bold; }
+        .status-Terlambat { color: #f57c00; font-weight: bold; }
+        .status-Alpa { color: #c62828; font-weight: bold; }
+        .foto-thumb {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            cursor: pointer;
+            object-fit: cover;
+        }
+        a { color: #5c3d1a; text-decoration: none; }
+        @media (max-width: 700px) {
+            th, td { font-size: 10px; padding: 5px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <div class="logo">👑 RIWAYAT KERAJAAN</div>
+        <a href="/dashboard">🏰 KEMBALI</a>
+    </div>
+    
+    <div class="card">
+        <h1>📜 RIWAYAT SEMUA PASUKAN</h1>
+        
+        <div class="search-section">
+            <form method="GET" action="/riwayat" style="display: flex; gap: 10px; width: 100%;">
+                <input type="text" name="search" placeholder="🔍 Cari Nama..." value="{{ search }}">
+                <button type="submit">🔍 CARI</button>
+                {% if search %}
+                <a href="/riwayat" style="background: #8B4513; color: white; padding: 10px 20px; border-radius: 30px; text-decoration: none;">❌ HAPUS</a>
+                {% endif %}
+            </form>
+        </div>
+        
+        <div style="overflow-x: auto; max-height: 500px; overflow-y: auto;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Tanggal</th>
+                        <th>Jam</th>
+                        <th>Nama</th>
+                        <th>Role</th>
+                        <th>Status</th>
+                        <th>Foto</th>
+                        <th>Lokasi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for a in absensi_list %}
+                    <tr>
+                        <td>{{ a.tanggal }}</td>
+                        <td>{{ a.jam }}</td>
+                        <td><strong>{{ a.nama }}</strong></td>
+                        <td>{{ a.role }}</td>
+                        <td class="status-{{ a.status }}">{{ a.status }}</td>
+                        <td>
+                            {% if a.foto %}
+                            <img src="{{ a.foto }}" class="foto-thumb" onclick="window.open(this.src)">
+                            {% else %} - {% endif %}
+                        </td>
+                        <td style="font-size: 10px;">Lat: {{ a.lat }}, Lon: {{ a.lon }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        {% if not absensi_list %}
+        <p style="text-align: center; padding: 40px;">✨ Belum ada data absensi ✨</p>
+        {% endif %}
+    </div>
+</body>
+</html>

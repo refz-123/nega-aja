@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sudah Absen - SMKN 1 Gedangan</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5e6ca, #fdf0d8);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .card {
+            background: white;
+            border-radius: 30px;
+            padding: 40px;
+            text-align: center;
+            border: 3px solid #ffd700;
+            max-width: 400px;
+        }
+        .hadir { color: #2e7d32; font-size: 28px; font-weight: bold; }
+        .terlambat { color: #f57c00; font-size: 28px; font-weight: bold; }
+        .alpa { color: #c62828; font-size: 28px; font-weight: bold; }
+        a {
+            display: inline-block;
+            background: linear-gradient(135deg, #ffd700, #daa520);
+            padding: 12px 30px;
+            border-radius: 30px;
+            text-decoration: none;
+            color: #5c3d1a;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>📜 ANDA SUDAH ABSEN</h1>
+        {% if 'Hadir' in status %}
+        <div class="hadir">✅ HADIR DI ISTANA ✅</div>
+        {% elif 'Terlambat' in status %}
+        <div class="terlambat">⏰ TERLAMBAT — TETAP MASUK ⏰</div>
+        {% else %}
+        <div class="alpa">❌ ALPA HARI INI ❌</div>
+        {% endif %}
+        <p style="margin-top: 15px;">Jam Absen: <strong>{{ jam }}</strong></p>
+        <a href="/dashboard">🏰 KEMBALI KE ISTANA</a>
+    </div>
+</body>
+</html>
