@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Absen Selfie - SMKN 1 Gedangan</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #f5e6ca, #fdf0d8);
+            padding: 20px;
+        }
+        .container { max-width: 500px; margin: 0 auto; }
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            border: 2px solid #ffd700;
+        }
+        h1 { text-align: center; color: #8B4513; }
+        .info {
+            background: #fff8e7;
+            padding: 10px;
+            border-radius: 15px;
+            margin: 15px 0;
+            text-align: center;
+        }
+        #video {
+            width: 100%;
+            border-radius: 15px;
+            background: #000;
+            margin: 10px 0;
+        }
+        .btn-foto {
+            background: #ffd700;
+            padding: 12px;
+            border: none;
+            border-radius: 30px;
+            font-weight: bold;
+            width: 100%;
+            margin: 5px 0;
+            cursor: pointer;
+        }
+        .btn-lokasi {
+            background: #2196F3;
+            color: white;
+            padding: 12px;
+            border: none;
+            border-radius: 30px;
+            font-weight: bold;
+            width: 100%;
+            margin: 5px 0;
+            cursor: pointer;
+        }
+        .btn-absen {
+            background: #28a745;
+            color: white;
+            padding: 15px;
+            border: none;
+            border-radius: 30px;
+            font-weight: bold;
+            width: 100%;
+            margin: 10px 0;
+            font-size: 18px;
+            cursor: pointer;
+        }
+        .btn-absen:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        #preview {
+            max-width: 100px;
+            border-radius: 10px;
+            margin-top: 10px;
+            display: none;
+        }
+        .gps-info {
+            background: #e8f5e9;
+            padding: 10px;
+            border-radius: 10px;
+            font-size: 12px;
+            margin: 10px 0;
+            text-align: center;
+        }
+        .preview-area {
+            text-align: center;
+        }
+        .switch-cam {
+            background: #6c757d;
+            color: white;
+            padding: 8px;
+            border: none;
+            border-radius: 20px;
+            margin: 5px 0;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <h1>📸 ABSEN SELFIE</h1>
+            
+            <div class="info">
+                <p>{{ nama }} | {{ kelas }}</p>
+                <p><span id="waktu">{{ jam }}</span> | <span id="tanggal"></span></p>
+            </div>
+            
+            <!-- VIDEO KAMERA LANGSUNG -->
+            <video id="video" autoplay playsinline></video>
+            <canvas id="canvas" style="display:none;"></canvas>
+            
+            <button class="btn-foto" onclick="ambilFoto()">📸 AMBIL FOTO</button>
+            <button class="switch-cam" onclick="gantiKamera()">🔄 Ganti Kamera</button>
+            
+            <div class="preview-area">
+                <img id="preview">
+            </div>
+            
+            <button class="btn-lokasi" onclick="ambilLokasi()">📍 AMBIL LOKASI</button>
+            <div class="gps-info" id="gpsInfo">⚠️ Klik tombol di atas</div>
+            
+            <button class="btn-absen" id="btnAbsen" onclick="simpanAbsen()" disabled>📜 KIRIM ABSEN</button>
+        </div>
+    </div>
+    
+    <script>
+        let fotoBase64 = null;
+        let latitude = null;
+        let longitude = null;
+        let stream = null;
+        let pakaiDepan = false;
+        
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const preview = document.getElementById('preview');
+        
+        document.getElementById('tanggal').innerText = new Date().toISOString().split('T')[0];
+        
+        setInterval(() => {
+            let d = new Date();
+            document.getElementById('waktu').innerHTML = `${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}:${d.getSeconds().toString().padStart(2,'0')}`;
+        }, 1000);
+        
+        async function mulaiKamera() {
+            if (stream) stream.getTracks().forEach(t => t.stop());
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: pakaiDepan ? 'user' : 'environment' }
+                });
+                video.srcObject = stream;
+            } catch(e) {
+                alert('Gagal buka kamera: ' + e.message);
+            }
+        }
+        
+        function gantiKamera() {
+            pakaiDepan = !pakaiDepan;
+            mulaiKamera();
+        }
+        
+        function ambilFoto() {
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            canvas.getContext('2d').drawImage(video, 0, 0);
+            fotoBase64 = canvas.toDataURL('image/jpeg');
+            preview.src = fotoBase64;
+            preview.style.display = 'block';
+            cekSiap();
+        }
+        
+        function ambilLokasi() {
+            const gpsDiv = document.getElementById('gpsInfo');
+            gpsDiv.innerHTML = "🌍 Mendapatkan lokasi...";
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (p) => {
+                        latitude = p.coords.latitude;
+                        longitude = p.coords.longitude;
+                        gpsDiv.innerHTML = `✅ Lokasi: ${latitude.toFixed(4)}, ${longitude.toFixed(4)}`;
+                        cekSiap();
+                    },
+                    () => {
+                        gpsDiv.innerHTML = "❌ Gagal dapat lokasi. Izinkan GPS.";
+                    }
+                );
+            } else {
+                gpsDiv.innerHTML = "❌ GPS tidak support";
+            }
+        }
+        
+        function cekSiap() {
+            document.getElementById('btnAbsen').disabled = !(fotoBase64 && latitude);
+        }
+        
+        async function simpanAbsen() {
+            let btn = document.getElementById('btnAbsen');
+            btn.disabled = true;
+            btn.innerText = "MENGIRIM...";
+            try {
+                let res = await fetch('/absen', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ foto: fotoBase64, lat: latitude, lon: longitude })
+                });
+                let result = await res.json();
+                if (result.status === 'success') {
+                    alert(result.message);
+                    window.location.href = '/dashboard';
+                } else {
+                    alert('Error: ' + result.message);
+                    btn.disabled = false;
+                    btn.innerText = "KIRIM ABSEN";
+                }
+            } catch(e) {
+                alert('Gagal: ' + e.message);
+                btn.disabled = false;
+                btn.innerText = "KIRIM ABSEN";
+            }
+        }
+        
+        mulaiKamera();
+    </script>
+</body>
+</html>
